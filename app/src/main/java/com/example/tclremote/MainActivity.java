@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText pairingCodeInput;
     private EditText textInput;
     private RemoteServiceClient client;
+    private String currentHost;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         bind(R.id.startPairingButton, v -> startPairing());
         bind(R.id.finishPairingButton, v -> finishPairing());
         bind(R.id.connectButton, v -> connect());
-        bind(R.id.sendTextButton, v -> setStatus("Keyboard input is the next step after remote pairing works"));
+        bind(R.id.sendTextButton, v -> sendText());
 
         bindKey(R.id.upButton, 19);
         bindKey(R.id.downButton, 20);
@@ -58,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 client = new RemoteServiceClient(CertificateStore.loadOrCreate(this));
-                client.startPairing(hostInput.getText().toString().trim());
+                currentHost = hostInput.getText().toString().trim();
+                client.startPairing(currentHost);
                 setStatus("TV should now show a pairing code");
             } catch (Exception e) {
                 setStatus("Pairing error: " + e.getMessage());
@@ -83,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
                 if (client == null) {
                     client = new RemoteServiceClient(CertificateStore.loadOrCreate(this));
                 }
-                client.connect(hostInput.getText().toString().trim());
+                currentHost = hostInput.getText().toString().trim();
+                client.connect(currentHost);
                 setStatus("Connected");
             } catch (Exception e) {
                 setStatus("Connection error: " + e.getMessage());
@@ -94,10 +97,35 @@ public class MainActivity extends AppCompatActivity {
     private void sendKey(int keyCode) {
         executor.execute(() -> {
             try {
+                if (client == null) {
+                    setStatus("Not connected. Please connect first.");
+                    return;
+                }
                 client.sendKey(keyCode);
                 setStatus("Sent key " + keyCode);
             } catch (Exception e) {
                 setStatus("Command error: " + e.getMessage());
+            }
+        });
+    }
+
+    private void sendText() {
+        executor.execute(() -> {
+            try {
+                if (client == null) {
+                    setStatus("Not connected. Please connect first.");
+                    return;
+                }
+                String text = textInput.getText().toString();
+                if (text.isEmpty()) {
+                    setStatus("Please enter text to send");
+                    return;
+                }
+                client.sendText(text);
+                setStatus("Text sent: " + text);
+                runOnUiThread(() -> textInput.setText(""));
+            } catch (Exception e) {
+                setStatus("Text error: " + e.getMessage());
             }
         });
     }
