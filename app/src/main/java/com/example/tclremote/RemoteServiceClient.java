@@ -83,10 +83,14 @@ public class RemoteServiceClient {
     }
 
     public void sendKey(int keyCode) throws Exception {
+        // Direction 0 = Key Press (down)
+        writeRemote(RemoteProto.RemoteMessage.newBuilder()
+                .setRemoteKeyInject(RemoteProto.RemoteKeyInject.newBuilder().setKeyCode(keyCode).setDirection(0)).build());
+        // Small delay between press and release for proper key event processing
+        Thread.sleep(50);
+        // Direction 1 = Key Release (up)
         writeRemote(RemoteProto.RemoteMessage.newBuilder()
                 .setRemoteKeyInject(RemoteProto.RemoteKeyInject.newBuilder().setKeyCode(keyCode).setDirection(1)).build());
-        writeRemote(RemoteProto.RemoteMessage.newBuilder()
-                .setRemoteKeyInject(RemoteProto.RemoteKeyInject.newBuilder().setKeyCode(keyCode).setDirection(2)).build());
     }
 
     /**
@@ -97,10 +101,10 @@ public class RemoteServiceClient {
             return;
         }
 
-        // Send character by character
+        // Send character by character with proper delays
         for (char c : text.toCharArray()) {
             sendChar(c);
-            Thread.sleep(100); // Delay between characters to ensure processing
+            Thread.sleep(200); // Delay between characters to ensure TV processing
         }
     }
 
