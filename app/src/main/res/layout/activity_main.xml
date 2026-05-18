@@ -113,17 +113,51 @@
             android:gravity="center"
             android:useDefaultMargins="true">
 
-            <Space android:layout_width="72dp" android:layout_height="72dp" />
-            <Button android:id="@+id/upButton" android:layout_width="72dp" android:layout_height="72dp" android:text="▲" />
-            <Space android:layout_width="72dp" android:layout_height="72dp" />
+            <Space
+                android:layout_width="72dp"
+                android:layout_height="72dp" />
 
-            <Button android:id="@+id/leftButton" android:layout_width="72dp" android:layout_height="72dp" android:text="◀" />
-            <Button android:id="@+id/selectButton" android:layout_width="72dp" android:layout_height="72dp" android:text="OK" />
-            <Button android:id="@+id/rightButton" android:layout_width="72dp" android:layout_height="72dp" android:text="▶" />
+            <Button
+                android:id="@+id/upButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:text="▲" />
 
-            <Space android:layout_width="72dp" android:layout_height="72dp" />
-            <Button android:id="@+id/downButton" android:layout_width="72dp" android:layout_height="72dp" android:text="▼" />
-            <Space android:layout_width="72dp" android:layout_height="72dp" />
+            <Space
+                android:layout_width="72dp"
+                android:layout_height="72dp" />
+
+            <Button
+                android:id="@+id/leftButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:text="◀" />
+
+            <Button
+                android:id="@+id/selectButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:text="OK" />
+
+            <Button
+                android:id="@+id/rightButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:text="▶" />
+
+            <Space
+                android:layout_width="72dp"
+                android:layout_height="72dp" />
+
+            <Button
+                android:id="@+id/downButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:text="▼" />
+
+            <Space
+                android:layout_width="72dp"
+                android:layout_height="72dp" />
         </GridLayout>
 
         <LinearLayout
@@ -139,8 +173,17 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <Button android:id="@+id/volumeUpButton" android:text="Vol +" />
-                <Button android:id="@+id/volumeDownButton" android:text="Vol -" />
+                <Button
+                    android:id="@+id/volumeUpButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Vol +" />
+
+                <Button
+                    android:id="@+id/volumeDownButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Vol -" />
             </LinearLayout>
 
             <LinearLayout
@@ -150,8 +193,17 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <Button android:id="@+id/channelUpButton" android:text="Ch +" />
-                <Button android:id="@+id/channelDownButton" android:text="Ch -" />
+                <Button
+                    android:id="@+id/channelUpButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ch +" />
+
+                <Button
+                    android:id="@+id/channelDownButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ch -" />
             </LinearLayout>
         </LinearLayout>
 
