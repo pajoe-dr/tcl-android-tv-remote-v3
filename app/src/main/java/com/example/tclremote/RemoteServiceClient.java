@@ -19,6 +19,9 @@ public class RemoteServiceClient {
     private OutputStream pairingOut;
     private SSLSocket remoteSocket;
     private OutputStream remoteOut;
+    private InputStream remoteIn;
+    private Thread keepaliveThread;
+    private static final long KEEPALIVE_INTERVAL = 30000; // 30 seconds
 
     public RemoteServiceClient(CertificateStore.StoredIdentity identity) { this.identity = identity; }
 
@@ -62,6 +65,7 @@ public class RemoteServiceClient {
     public void connect(String host) throws Exception {
         remoteSocket = socket(host, 6466);
         remoteOut = remoteSocket.getOutputStream();
+        remoteIn = remoteSocket.getInputStream();
         writeRemote(RemoteProto.RemoteMessage.newBuilder()
                 .setRemoteConfigure(RemoteProto.RemoteConfigure.newBuilder().setCode1(622)
                         .setDeviceInfo(RemoteProto.RemoteDeviceInfo.newBuilder()
@@ -73,6 +77,9 @@ public class RemoteServiceClient {
                                 .setAppVersion("1.0"))).build());
         writeRemote(RemoteProto.RemoteMessage.newBuilder()
                 .setRemoteSetActive(RemoteProto.RemoteSetActive.newBuilder().setActive(622)).build());
+        
+        // Start keepalive thread to maintain connection
+        startKeepalive();
     }
 
     public void sendKey(int keyCode) throws Exception {
@@ -80,6 +87,99 @@ public class RemoteServiceClient {
                 .setRemoteKeyInject(RemoteProto.RemoteKeyInject.newBuilder().setKeyCode(keyCode).setDirection(1)).build());
         writeRemote(RemoteProto.RemoteMessage.newBuilder()
                 .setRemoteKeyInject(RemoteProto.RemoteKeyInject.newBuilder().setKeyCode(keyCode).setDirection(2)).build());
+    }
+
+    /**
+     * Send text input to the TV using character-by-character key codes
+     */
+    public void sendText(String text) throws Exception {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
+        // Send character by character
+        for (char c : text.toCharArray()) {
+            sendChar(c);
+            Thread.sleep(100); // Delay between characters to ensure processing
+        }
+    }
+
+    /**
+     * Send a single character using its key code
+     */
+    private void sendChar(char c) throws Exception {
+        int keyCode = charToKeyCode(c);
+        if (keyCode > 0) {
+            sendKey(keyCode);
+        }
+    }
+
+    /**
+     * Convert a character to its Android KeyCode
+     * Supports letters, numbers, and common special characters
+     */
+    private int charToKeyCode(char c) {
+        // Numbers: KEYCODE_0 (7) through KEYCODE_9 (16)
+        if (c >= '0' && c <= '9') {
+            return 7 + (c - '0');
+        }
+        
+        // Lowercase letters: KEYCODE_A (29) through KEYCODE_Z (54)
+        if (c >= 'a' && c <= 'z') {
+            return 29 + (c - 'a');
+        }
+        
+        // Uppercase letters (same keycodes as lowercase)
+        if (c >= 'A' && c <= 'Z') {
+            return 29 + (c - 'A');
+        }
+        
+        // Special characters
+        switch (c) {
+            case ' ':    return 62;  // KEYCODE_SPACE
+            case '.':    return 56;  // KEYCODE_PERIOD
+            case ',':    return 55;  // KEYCODE_COMMA
+            case '\'':   return 73;  // KEYCODE_APOSTROPHE
+            case '-':    return 69;  // KEYCODE_MINUS
+            case '/':    return 76;  // KEYCODE_SLASH
+            case '@':    return 77;  // KEYCODE_AT
+            case '*':    return 17;  // KEYCODE_STAR (on keypad)
+            case '#':    return 18;  // KEYCODE_POUND (on keypad)
+            case '+':    return 81;  // KEYCODE_PLUS
+            case ':':    return 74;  // KEYCODE_SEMICOLON
+            case ';':    return 74;  // KEYCODE_SEMICOLON
+            case '=':    return 70;  // KEYCODE_EQUALS
+            case '[':    return 71;  // KEYCODE_LEFT_BRACKET
+            case ']':    return 72;  // KEYCODE_RIGHT_BRACKET
+            case '\n':   return 66;  // KEYCODE_ENTER
+            case '\t':   return 61;  // KEYCODE_TAB
+            default:     return 0;   // Unsupported character
+        }
+    }
+
+    /**
+     * Start a background thread to send keepalive messages
+     * This prevents the connection from timing out after a few minutes
+     */
+    private void startKeepalive() {
+        if (keepaliveThread != null && keepaliveThread.isAlive()) {
+            return;
+        }
+        keepaliveThread = new Thread(() -> {
+            while (remoteSocket != null && remoteSocket.isConnected()) {
+                try {
+                    Thread.sleep(KEEPALIVE_INTERVAL);
+                    // Send a keepalive message to maintain the connection
+                    writeRemote(RemoteProto.RemoteMessage.newBuilder()
+                            .setRemoteSetActive(RemoteProto.RemoteSetActive.newBuilder().setActive(622)).build());
+                } catch (Exception e) {
+                    // Connection lost, exit keepalive
+                    break;
+                }
+            }
+        });
+        keepaliveThread.setDaemon(true);
+        keepaliveThread.start();
     }
 
     private SSLSocket socket(String host, int port) throws Exception {
