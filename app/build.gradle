@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.protobuf' version '0.9.4'
+}
+
+android {
+    namespace 'com.example.tclremote'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.example.tclremote'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.github.MuntashirAkon:sun-security-android:1.1'
+    implementation 'com.google.protobuf:protobuf-javalite:3.25.5'
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+    }
+}
+
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:3.25.5' }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java { option 'lite' }
+            }
+        }
+    }
+}

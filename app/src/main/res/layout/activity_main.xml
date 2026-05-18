@@ -1,0 +1,93 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F8FAFC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TCL Android TV Remote"
+            android:textColor="#0F172A"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Not connected"
+            android:textColor="#475569"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/hostInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:hint="TV IP address"
+            android:inputType="textUri" />
+
+        <Button
+            android:id="@+id/startPairingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start pairing" />
+
+        <EditText
+            android:id="@+id/pairingCodeInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Code shown on TV"
+            android:inputType="text" />
+
+        <Button
+            android:id="@+id/finishPairingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Finish pairing" />
+
+        <Button
+            android:id="@+id/connectButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Connect remote" />
+
+        <EditText
+            android:id="@+id/textInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Text input coming next" />
+
+        <Button
+            android:id="@+id/sendTextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send keyboard text" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <Button android:id="@+id/volumeUpButton" android:text="Volume +" />
+            <Button android:id="@+id/volumeDownButton" android:text="Volume -" />
+            <Button android:id="@+id/channelUpButton" android:text="Channel +" />
+            <Button android:id="@+id/channelDownButton" android:text="Channel -" />
+            <Button android:id="@+id/muteButton" android:text="Mute" />
+            <Button android:id="@+id/homeButton" android:text="Home" />
+            <Button android:id="@+id/backButton" android:text="Back" />
+            <Button android:id="@+id/menuButton" android:text="Menu / Settings" />
+        </GridLayout>
+    </LinearLayout>
+</ScrollView>

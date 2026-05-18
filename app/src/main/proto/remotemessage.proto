@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_package = "com.example.tclremote.proto";
+option java_outer_classname = "RemoteProto";
+
+message RemoteDeviceInfo {
+  string model = 1;
+  string vendor = 2;
+  int32 unknown1 = 3;
+  string unknown2 = 4;
+  string package_name = 5;
+  string app_version = 6;
+}
+
+message RemoteConfigure {
+  int32 code1 = 1;
+  RemoteDeviceInfo device_info = 2;
+}
+
+message RemoteSetActive { int32 active = 1; }
+message RemoteKeyInject { int32 key_code = 1; int32 direction = 2; }
+
+message RemoteMessage {
+  RemoteConfigure remote_configure = 1;
+  RemoteSetActive remote_set_active = 2;
+  RemoteKeyInject remote_key_inject = 10;
+}
