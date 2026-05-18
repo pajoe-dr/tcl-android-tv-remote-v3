@@ -24,26 +24,90 @@ public class MainActivity extends AppCompatActivity {
         hostInput = findViewById(R.id.hostInput);
         pairingCodeInput = findViewById(R.id.pairingCodeInput);
         textInput = findViewById(R.id.textInput);
+
         bind(R.id.startPairingButton, v -> startPairing());
         bind(R.id.finishPairingButton, v -> finishPairing());
         bind(R.id.connectButton, v -> connect());
         bind(R.id.sendTextButton, v -> setStatus("Keyboard input is the next step after remote pairing works"));
+
+        bindKey(R.id.upButton, 19);
+        bindKey(R.id.downButton, 20);
+        bindKey(R.id.leftButton, 21);
+        bindKey(R.id.rightButton, 22);
+        bindKey(R.id.selectButton, 23);
+
         bindKey(R.id.volumeUpButton, 24);
         bindKey(R.id.volumeDownButton, 25);
         bindKey(R.id.channelUpButton, 166);
         bindKey(R.id.channelDownButton, 167);
-        bindKey(R.id.muteButton, 164);
+
         bindKey(R.id.homeButton, 3);
         bindKey(R.id.backButton, 4);
-        bindKey(R.id.menuButton, 82);
+        bindKey(R.id.powerButton, 26);
     }
 
-    private void bind(int id, View.OnClickListener listener) { ((Button) findViewById(id)).setOnClickListener(listener); }
-    private void bindKey(int id, int keyCode) { bind(id, v -> sendKey(keyCode)); }
-    private void startPairing() { executor.execute(() -> { try { client = new RemoteServiceClient(CertificateStore.loadOrCreate(this)); client.startPairing(hostInput.getText().toString().trim()); setStatus("TV should now show a pairing code"); } catch (Exception e) { setStatus("Pairing error: " + e.getMessage()); } }); }
-    private void finishPairing() { executor.execute(() -> { try { client.finishPairing(pairingCodeInput.getText().toString().trim()); setStatus("Paired successfully"); } catch (Exception e) { setStatus("Pairing error: " + e.getMessage()); } }); }
-    private void connect() { executor.execute(() -> { try { if (client == null) client = new RemoteServiceClient(CertificateStore.loadOrCreate(this)); client.connect(hostInput.getText().toString().trim()); setStatus("Connected"); } catch (Exception e) { setStatus("Connection error: " + e.getMessage()); } }); }
-    private void sendKey(int keyCode) { executor.execute(() -> { try { client.sendKey(keyCode); setStatus("Sent key " + keyCode); } catch (Exception e) { setStatus("Command error: " + e.getMessage()); } }); }
-    private void setStatus(String text) { runOnUiThread(() -> statusText.setText(text)); }
-    @Override protected void onDestroy() { executor.shutdownNow(); super.onDestroy(); }
+    private void bind(int id, View.OnClickListener listener) {
+        ((Button) findViewById(id)).setOnClickListener(listener);
+    }
+
+    private void bindKey(int id, int keyCode) {
+        bind(id, v -> sendKey(keyCode));
+    }
+
+    private void startPairing() {
+        executor.execute(() -> {
+            try {
+                client = new RemoteServiceClient(CertificateStore.loadOrCreate(this));
+                client.startPairing(hostInput.getText().toString().trim());
+                setStatus("TV should now show a pairing code");
+            } catch (Exception e) {
+                setStatus("Pairing error: " + e.getMessage());
+            }
+        });
+    }
+
+    private void finishPairing() {
+        executor.execute(() -> {
+            try {
+                client.finishPairing(pairingCodeInput.getText().toString().trim());
+                setStatus("Paired successfully");
+            } catch (Exception e) {
+                setStatus("Pairing error: " + e.getMessage());
+            }
+        });
+    }
+
+    private void connect() {
+        executor.execute(() -> {
+            try {
+                if (client == null) {
+                    client = new RemoteServiceClient(CertificateStore.loadOrCreate(this));
+                }
+                client.connect(hostInput.getText().toString().trim());
+                setStatus("Connected");
+            } catch (Exception e) {
+                setStatus("Connection error: " + e.getMessage());
+            }
+        });
+    }
+
+    private void sendKey(int keyCode) {
+        executor.execute(() -> {
+            try {
+                client.sendKey(keyCode);
+                setStatus("Sent key " + keyCode);
+            } catch (Exception e) {
+                setStatus("Command error: " + e.getMessage());
+            }
+        });
+    }
+
+    private void setStatus(String text) {
+        runOnUiThread(() -> statusText.setText(text));
+    }
+
+    @Override protected void onDestroy() {
+        executor.shutdownNow();
+        super.onDestroy();
+    }
 }
