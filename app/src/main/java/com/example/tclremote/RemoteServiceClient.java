@@ -27,7 +27,7 @@ public class RemoteServiceClient {
         pairingIn = pairingSocket.getInputStream();
         pairingOut = pairingSocket.getOutputStream();
         writePairing(PairingProto.OuterMessage.newBuilder().setProtocolVersion(2).setStatus(PairingProto.OuterMessage.Status.STATUS_OK)
-                .setPairingRequest(PairingProto.PairingRequest.newBuilder().setServiceName("androidtvremote").setClientName("TCL Remote")).build());
+                .setPairingRequest(PairingProto.PairingRequest.newBuilder().setServiceName("atvremote").setClientName("TCL Remote")).build());
         readPairing();
         PairingProto.Options.Encoding encoding = PairingProto.Options.Encoding.newBuilder()
                 .setType(PairingProto.Options.Encoding.EncodingType.ENCODING_TYPE_HEXADECIMAL)
@@ -36,8 +36,7 @@ public class RemoteServiceClient {
         writePairing(PairingProto.OuterMessage.newBuilder().setProtocolVersion(2).setStatus(PairingProto.OuterMessage.Status.STATUS_OK)
                 .setOptions(PairingProto.Options.newBuilder()
                         .setPreferredRole(PairingProto.Options.RoleType.ROLE_TYPE_INPUT)
-                        .addInputEncodings(encoding)
-                        .addOutputEncodings(encoding)).build());
+                        .addInputEncodings(encoding)).build());
         readPairing();
         writePairing(PairingProto.OuterMessage.newBuilder().setProtocolVersion(2).setStatus(PairingProto.OuterMessage.Status.STATUS_OK)
                 .setConfiguration(PairingProto.Configuration.newBuilder()
@@ -50,6 +49,9 @@ public class RemoteServiceClient {
         X509Certificate clientCert = (X509Certificate) identity.certificate;
         X509Certificate serverCert = (X509Certificate) pairingSocket.getSession().getPeerCertificates()[0];
         byte[] secret = secret(code, (RSAPublicKey) clientCert.getPublicKey(), (RSAPublicKey) serverCert.getPublicKey());
+        if ((secret[0] & 0xFF) != Integer.parseInt(code.substring(0, 2), 16)) {
+            throw new IllegalStateException("Pairing code did not validate");
+        }
         writePairing(PairingProto.OuterMessage.newBuilder().setProtocolVersion(2).setStatus(PairingProto.OuterMessage.Status.STATUS_OK)
                 .setSecret(PairingProto.Secret.newBuilder().setSecret(ByteString.copyFrom(secret))).build());
         PairingProto.OuterMessage response = readPairing();
@@ -112,6 +114,39 @@ public class RemoteServiceClient {
     private void writePairing(PairingProto.OuterMessage msg) throws Exception { frame(pairingOut, msg.toByteArray()); }
     private PairingProto.OuterMessage readPairing() throws Exception { return PairingProto.OuterMessage.parseFrom(read(pairingIn)); }
     private void writeRemote(RemoteProto.RemoteMessage msg) throws Exception { frame(remoteOut, msg.toByteArray()); }
-    private void frame(OutputStream out, byte[] payload) throws Exception { out.write(payload.length); out.write(payload); out.flush(); }
-    private byte[] read(InputStream in) throws Exception { int n = in.read(); byte[] b = new byte[n]; int o = 0; while (o < n) { int r = in.read(b, o, n - o); if (r < 0) throw new EOFException(); o += r; } return b; }
+    private void frame(OutputStream out, byte[] payload) throws Exception {
+        writeVarint(out, payload.length);
+        out.write(payload);
+        out.flush();
+    }
+    private byte[] read(InputStream in) throws Exception {
+        int n = readVarint(in);
+        byte[] b = new byte[n];
+        int o = 0;
+        while (o < n) {
+            int r = in.read(b, o, n - o);
+            if (r < 0) throw new EOFException();
+            o += r;
+        }
+        return b;
+    }
+    private void writeVarint(OutputStream out, int value) throws Exception {
+        while ((value & ~0x7F) != 0) {
+            out.write((value & 0x7F) | 0x80);
+            value >>>= 7;
+        }
+        out.write(value);
+    }
+    private int readVarint(InputStream in) throws Exception {
+        int value = 0;
+        int shift = 0;
+        while (shift < 32) {
+            int b = in.read();
+            if (b < 0) throw new EOFException();
+            value |= (b & 0x7F) << shift;
+            if ((b & 0x80) == 0) return value;
+            shift += 7;
+        }
+        throw new IOException("Malformed varint");
+    }
 }
